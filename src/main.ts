@@ -15,8 +15,8 @@ export interface Tile {
 ////////**** EDIT THIS STUFF ****////////
 
 /**
- * Given an array of tiles, update each tile's direction properties to indicate which tiles it can tile with in each direction.
- * @param tiles Array of Tile objects to update
+ * Given an array of tiles, update each tile's direction properties to indicate which tiles 
+ * it can tile with in each direction. @param tiles Array of Tile objects to update
  */
 export function updateTileNeighbors(tiles: Tile[]): void {
   // Tiles are arranged in a grid, but represented as a 1D array. Starting at index 0, the first tile is in the top-left corner 
@@ -77,6 +77,7 @@ processBtn.onclick = () => {
         }
       }
       updateTileNeighbors(tiles);
+      
       console.log('Tiles:', tiles);
       alert(`Created ${tiles.length} tiles. Please check the console for details.`);
       //TODO - Thomas - Add code to validate results.
