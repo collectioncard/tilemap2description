@@ -171,7 +171,7 @@ processBtn.onclick = async () => {
         }
       }
 
-      updateTileNeighbors(tiles);
+      updateTileNeighbors(tiles,tileSize);
 
       // Display all tile images on screen
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');
