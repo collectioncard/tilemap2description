@@ -14,21 +14,115 @@ export interface Tile {
 
 ////////**** EDIT THIS STUFF ****////////
 
-/**
- * Given an array of tiles, update each tile's direction properties to indicate which tiles it can tile with in each direction.
- * @param tiles Array of Tile objects to update
- */
-export function updateTileNeighbors(tiles: Tile[]): void {
-  // Tiles are arranged in a grid, but represented as a 1D array. Starting at index 0, the first tile is in the top-left corner 
-  // and the last tile is in the bottom-right corner. A neighboring tile can be added like so:
-  //
-  //  tiles[0].right = [tiles[1], tiles[2]];
-  //
-  // This means that tile 0 can tile with tiles 1 and 2 to its right. It's probably best to also put the reciprocal relationship 
-  // in place so you can skip some calculations, but the implementation is entirely up to you. I'm just guessing here.
+// Utility: Extract edge pixels from a tile image
+function getEdgePixels(tileImage: string, tileSize: number) {
+  const img = new Image();
+  img.src = tileImage;
+  const canvas = document.createElement('canvas');
+  canvas.width = tileSize;
+  canvas.height = tileSize;
+  const ctx = canvas.getContext('2d')!;
   
-  // TODO: implement neighbor assignment logic here
+  return new Promise<{ top: Uint8ClampedArray, bottom: Uint8ClampedArray, left: Uint8ClampedArray, right: Uint8ClampedArray }>((resolve) => {
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, tileSize, tileSize);
+      const imageData = ctx.getImageData(0, 0, tileSize, tileSize).data;
+
+      const top = imageData.slice(0, tileSize * 4);
+      const bottom = imageData.slice((tileSize * (tileSize - 1)) * 4, tileSize * tileSize * 4);
+
+      const left = new Uint8ClampedArray(tileSize * 4);
+      const right = new Uint8ClampedArray(tileSize * 4);
+      for (let y = 0; y < tileSize; y++) {
+        left.set(imageData.slice((y * tileSize + 0) * 4, (y * tileSize + 1) * 4), y * 4);
+        right.set(imageData.slice((y * tileSize + (tileSize - 1)) * 4, (y * tileSize + tileSize) * 4), y * 4);
+      }
+
+      resolve({ top, bottom, left, right });
+    };
+  });
 }
+
+function edgesMatch(
+  edgeA: Uint8ClampedArray,
+  edgeB: Uint8ClampedArray,
+  tolerance = 5,
+  matchThreshold = 0.65,
+  emptyThreshold = 0.5 // % of pixels allowed to be empty before rejecting
+): boolean {
+  // Helper: Calculate % of empty pixels (transparent or near-white)
+  const emptyRatio = (edge: Uint8ClampedArray) => {
+    let emptyCount = 0;
+    const totalPixels = edge.length / 4;
+
+    for (let i = 0; i < edge.length; i += 4) {
+      const [r, g, b, a] = [edge[i], edge[i+1], edge[i+2], edge[i+3]];
+      const isTransparent = a === 0;
+      const isNearWhite = a > 0 && r > 240 && g > 240 && b > 240; // optional: treat near-white as empty
+      if (isTransparent || isNearWhite) emptyCount++;
+    }
+    return emptyCount / totalPixels;
+  };
+
+  // Skip matching if either edge is mostly empty
+  if (emptyRatio(edgeA) >= emptyThreshold || emptyRatio(edgeB) >= emptyThreshold) {
+    return false;
+  }
+
+  // Count pixel matches
+  let matchCount = 0;
+  const totalPixels = edgeA.length / 4;
+  for (let i = 0; i < edgeA.length; i += 4) {
+    const rDiff = Math.abs(edgeA[i] - edgeB[i]);
+    const gDiff = Math.abs(edgeA[i + 1] - edgeB[i + 1]);
+    const bDiff = Math.abs(edgeA[i + 2] - edgeB[i + 2]);
+    const aDiff = Math.abs(edgeA[i + 3] - edgeB[i + 3]);
+
+    if (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance && aDiff <= tolerance) {
+      matchCount++;
+    }
+  }
+
+  return (matchCount / totalPixels) >= matchThreshold;
+}
+
+
+
+/**
+ * Given an array of tiles, update each tile's direction properties
+ * by comparing tile edges for visual matches.
+ */
+export async function updateTileNeighbors(tiles: Tile[], tileSize: number): Promise<void> {
+  // Precompute edges for all tiles
+  const edgesMap = new Map<number, Awaited<ReturnType<typeof getEdgePixels>>>();
+  for (const tile of tiles) {
+    edgesMap.set(tile.id, await getEdgePixels(tile.image!, tileSize));
+  }
+
+  // Reset neighbors
+  tiles.forEach(tile => {
+    tile.up = [];
+    tile.down = [];
+    tile.left = [];
+    tile.right = [];
+  });
+
+  // Compare all tiles for matching edges
+  for (const tileA of tiles) {
+    const edgesA = edgesMap.get(tileA.id)!;
+    for (const tileB of tiles) {
+      if (tileA.id === tileB.id) continue;
+      const edgesB = edgesMap.get(tileB.id)!;
+
+      if (edgesMatch(edgesA.top, edgesB.bottom)) tileA.up!.push(tileB);
+      if (edgesMatch(edgesA.bottom, edgesB.top)) tileA.down!.push(tileB);
+      if (edgesMatch(edgesA.left, edgesB.right)) tileA.left!.push(tileB);
+      if (edgesMatch(edgesA.right, edgesB.left)) tileA.right!.push(tileB);
+
+    }
+  }
+}
+
 
 
 ////////**** Code to take in a tileset and create array. Only edit if you need to ****////////
