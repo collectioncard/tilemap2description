@@ -47,8 +47,8 @@ function edgesMatch(
   edgeA: Uint8ClampedArray,
   edgeB: Uint8ClampedArray,
   tolerance = 5,
-  matchThreshold = 0.65,
-  emptyThreshold = 0.5 // % of pixels allowed to be empty before rejecting
+  matchThreshold = 0.75,
+  emptyThreshold = 0.75 // % of pixels allowed to be empty before rejecting
 ): boolean {
   // Helper: Calculate % of empty pixels (transparent or near-white)
   const emptyRatio = (edge: Uint8ClampedArray) => {
