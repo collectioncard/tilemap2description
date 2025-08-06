@@ -50,7 +50,7 @@ function edgesMatch(
   matchThreshold = 0.65,
   emptyThreshold = 0.5 // % of pixels allowed to be empty before rejecting
 ): boolean {
-  // Helper: Calculate % of empty pixels (transparent, near-white, or near-black)
+  // Helper: Calculate % of empty pixels (transparent or near-white)
   const emptyRatio = (edge: Uint8ClampedArray) => {
     let emptyCount = 0;
     const totalPixels = edge.length / 4;
@@ -58,10 +58,8 @@ function edgesMatch(
     for (let i = 0; i < edge.length; i += 4) {
       const [r, g, b, a] = [edge[i], edge[i+1], edge[i+2], edge[i+3]];
       const isTransparent = a === 0;
-      const isNearWhite = a > 0 && r > 240 && g > 240 && b > 240;
-      const isNearBlack = a > 0 && r < 15 && g < 15 && b < 15; // NEW: treat near-black as empty
-
-      if (isTransparent || isNearWhite || isNearBlack) emptyCount++;
+      const isNearWhite = a > 0 && r > 240 && g > 240 && b > 240; // optional: treat near-white as empty
+      if (isTransparent || isNearWhite) emptyCount++;
     }
     return emptyCount / totalPixels;
   };
@@ -71,33 +69,21 @@ function edgesMatch(
     return false;
   }
 
-  // Count pixel matches while ignoring black/transparent pixels
+  // Count pixel matches
   let matchCount = 0;
-  let validPixels = 0; // track only pixels actually compared
-
+  const totalPixels = edgeA.length / 4;
   for (let i = 0; i < edgeA.length; i += 4) {
-    const [rA,gA,bA,aA] = [edgeA[i], edgeA[i+1], edgeA[i+2], edgeA[i+3]];
-    const [rB,gB,bB,aB] = [edgeB[i], edgeB[i+1], edgeB[i+2], edgeB[i+3]];
+    const rDiff = Math.abs(edgeA[i] - edgeB[i]);
+    const gDiff = Math.abs(edgeA[i + 1] - edgeB[i + 1]);
+    const bDiff = Math.abs(edgeA[i + 2] - edgeB[i + 2]);
+    const aDiff = Math.abs(edgeA[i + 3] - edgeB[i + 3]);
 
-    // Skip pixels if they're transparent or near-black
-    const skipA = (aA === 0) || (rA < 15 && gA < 15 && bA < 15);
-    const skipB = (aB === 0) || (rB < 15 && gB < 15 && bB < 15);
-    if (skipA || skipB) continue;
-
-    validPixels++;
-
-    if (
-      Math.abs(rA - rB) <= tolerance &&
-      Math.abs(gA - gB) <= tolerance &&
-      Math.abs(bA - bB) <= tolerance &&
-      Math.abs(aA - aB) <= tolerance
-    ) {
+    if (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance && aDiff <= tolerance) {
       matchCount++;
     }
   }
 
-  // Require enough valid matches among only non-border pixels
-  return validPixels > 0 && (matchCount / validPixels) >= matchThreshold;
+  return (matchCount / totalPixels) >= matchThreshold;
 }
 
 
@@ -185,7 +171,7 @@ processBtn.onclick = async () => {
         }
       }
 
-      updateTileNeighbors(tiles,tileSize);
+      updateTileNeighbors(tiles, tileSize);
 
       // Display all tile images on screen
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');
