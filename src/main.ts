@@ -47,43 +47,46 @@ function edgesMatch(
   edgeA: Uint8ClampedArray,
   edgeB: Uint8ClampedArray,
   tolerance = 5,
-  matchThreshold = 0.7,
-  emptyThreshold = 0.8 // % of pixels allowed to be empty before rejecting
+  matchThreshold = 0.625
 ): boolean {
-  // Helper: Calculate % of empty pixels (transparent or near-white)
-  const emptyRatio = (edge: Uint8ClampedArray) => {
-    let emptyCount = 0;
-    const totalPixels = edge.length / 4;
-
-    for (let i = 0; i < edge.length; i += 4) {
-      const [r, g, b, a] = [edge[i], edge[i+1], edge[i+2], edge[i+3]];
-      const isTransparent = a === 0;
-      const isNearWhite = a > 0 && r > 240 && g > 240 && b > 240; // optional: treat near-white as empty
-      if (isTransparent || isNearWhite) emptyCount++;
-    }
-    return emptyCount / totalPixels;
-  };
-
-  // Skip matching if either edge is mostly empty
-  if (emptyRatio(edgeA) >= emptyThreshold || emptyRatio(edgeB) >= emptyThreshold) {
-    return false;
-  }
-
-  // Count pixel matches
   let matchCount = 0;
-  const totalPixels = edgeA.length / 4;
-  for (let i = 0; i < edgeA.length; i += 4) {
-    const rDiff = Math.abs(edgeA[i] - edgeB[i]);
-    const gDiff = Math.abs(edgeA[i + 1] - edgeB[i + 1]);
-    const bDiff = Math.abs(edgeA[i + 2] - edgeB[i + 2]);
-    const aDiff = Math.abs(edgeA[i + 3] - edgeB[i + 3]);
+  let validPixelsA = 0;
+  let validPixelsB = 0;
 
-    if (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance && aDiff <= tolerance) {
-      matchCount++;
+  for (let i = 0; i < edgeA.length; i += 4) {
+    const [rA, gA, bA, aA] = [edgeA[i], edgeA[i + 1], edgeA[i + 2], edgeA[i + 3]];
+    const [rB, gB, bB, aB] = [edgeB[i], edgeB[i + 1], edgeB[i + 2], edgeB[i + 3]];
+
+    const isTransparentA = aA === 0;
+    const isTransparentB = aB === 0;
+    const isBorderA = (rA === 63 && gA === 38 && bA === 49);
+    const isBorderB = (rB === 63 && gB === 38 && bB === 49);
+
+    const isValidA = !(isTransparentA || isBorderA);
+    const isValidB = !(isTransparentB || isBorderB);
+
+    if (isValidA) validPixelsA++;
+    if (isValidB) validPixelsB++;
+
+    if (isValidA && isValidB) {
+      const rDiff = Math.abs(rA - rB);
+      const gDiff = Math.abs(gA - gB);
+      const bDiff = Math.abs(bA - bB);
+      const aDiff = Math.abs(aA - aB);
+
+      if (rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance && aDiff <= tolerance) {
+        matchCount++;
+      }
     }
   }
 
-  return (matchCount / totalPixels) >= matchThreshold;
+  // Avoid false matches when one edge is tiny
+  if (validPixelsA === 0 || validPixelsB === 0) return false;
+
+  const ratioA = matchCount / validPixelsA;
+  const ratioB = matchCount / validPixelsB;
+
+  return ratioA >= matchThreshold && ratioB >= matchThreshold;
 }
 
 
@@ -177,9 +180,13 @@ processBtn.onclick = async () => {
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');
       tileGallery.id = 'tileGallery';
       tileGallery.innerHTML = '';
-      tileGallery.style.display = 'flex';
-      tileGallery.style.flexWrap = 'wrap';
-      tileGallery.style.gap = '4px';
+      tileGallery.style.display = 'grid';
+      tileGallery.style.gridTemplateColumns = `repeat(${cols}, ${tileSize}px)`;
+      tileGallery.style.gridTemplateRows = `repeat(${rows}, ${tileSize}px)`;
+      tileGallery.style.gap = '1'; // or '1px' if you want spacing
+      tileGallery.style.width = `${cols * tileSize}px`;
+      tileGallery.style.border = '1px solid #ccc'; // optional visual edge
+
 
       // Create modal container
       const modal = document.createElement('div');
