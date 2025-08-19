@@ -1,3 +1,4 @@
+//TODO: Move importer team stuff into the right file
 import './style.css'
 
 export interface Tile {
