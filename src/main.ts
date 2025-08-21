@@ -1,6 +1,6 @@
 //TODO: Move importer team stuff into the right file
 import './style.css'
-
+import { TileMapData } from './tilemap/tilemapImporter';
 
 export interface Tile {
   id: number;
@@ -173,7 +173,7 @@ processBtn.onclick = async () => {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const cols = Math.floor(img.width / tileSize);
       const rows = Math.floor(img.height / tileSize);
       const tiles: Tile[] = [];
@@ -203,9 +203,7 @@ processBtn.onclick = async () => {
         }
       }
 
-
-      updateTileNeighbors(tiles, tileSize);
-
+      await updateTileNeighbors(tiles, tileSize);
 
       // Display all tile images on screen
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');
@@ -322,9 +320,14 @@ processBtn.onclick = async () => {
         tileGallery.appendChild(imgElem);
       });
 
+      //Izzy's Testing data
+      // Create TileMapData (so we can use it to call GetTiles)
+      const tileMapData = new TileMapData(img, tileSize);
+      (tileMapData as any).tiles = tiles; // Directly assign tiles for now (since LoadTilesFromImage is not implemented)
+      console.log('GetTiles output:', tileMapData.GetTiles());
 
       document.body.appendChild(tileGallery);
-      console.log('Tiles:', tiles);
+      console.log('Tiles:', tiles); //GetTiles Output gives the same results
       alert(`Created ${tiles.length} tiles. Please check the console for details.`);
       //TODO - Thomas - Add code to validate student results.
     };
