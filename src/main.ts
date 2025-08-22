@@ -45,8 +45,11 @@ processBtn.onclick = async () => {
     img.onload = () => {
       const tileMap = new TileMapData(img, tileSize);
       const tiles = tileMap.GetTiles();
-    
-      await updateTileNeighbors(tiles, tileSize);
+      const cols = (tileMap as any).cols;
+      const rows = (tileMap as any).rows;
+
+
+      updateTileNeighbors(tiles, tileSize);
     
       // Display all tile images on screen
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');

@@ -64,10 +64,15 @@ private cols = 0;
    * Return a "context image" for a tile.
    * Params tbd
    */
-  public GetTileContextImg(tileId: number, options?: any): HTMLImageElement | null {
-    // TODO: implement feature extraction
-    return null;
-  }
+  public GetTileContextImg(tileId: number): HTMLImageElement | null {
+  const tile = this.tiles.find(t => t.id === tileId);
+  if (!tile || !tile.image) return null;
+
+  const img = new Image();
+  img.src = tile.image;
+  return img;
+}
+
 
   /**
    * Return all tiles.
@@ -92,9 +97,14 @@ private cols = 0;
    */
   public LoadTilesFromImage(): void {
     if (!this.sourceImage || !this.tileSize) return;
-    // TODO: implement existing split logic (rows/cols/canvas slicing)
+    this.createTiles(this.sourceImage);
   }
+
 }
+
+
+
+
 
 // Utility: Extract edge pixels from a tile image
 function getEdgePixels(tileImage: string, tileSize: number) {
