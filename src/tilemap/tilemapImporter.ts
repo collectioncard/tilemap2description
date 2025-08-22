@@ -1,3 +1,4 @@
+//TODO: This stuff
 import type { Tile } from "../main.ts";
 
 export class TileMapData {
