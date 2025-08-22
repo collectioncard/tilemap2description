@@ -2,6 +2,7 @@
 import './style.css'
 import { TileMapData } from './tilemap/tilemapImporter';
 
+
 export interface Tile {
   id: number;
   image?: string; // Not currently used, but feel free to store a base64 image string here if needed
@@ -170,41 +171,16 @@ processBtn.onclick = async () => {
     alert('Please select an image and enter a valid tile size.');
     return;
   }
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
-    img.onload = async () => {
-      const cols = Math.floor(img.width / tileSize);
-      const rows = Math.floor(img.height / tileSize);
-      const tiles: Tile[] = [];
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = tileSize;
-      tempCanvas.height = tileSize;
-      const tempCtx = tempCanvas.getContext('2d');
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          tempCtx?.clearRect(0, 0, tileSize, tileSize);
-          tempCtx?.drawImage(
-            img,
-            x * tileSize,
-            y * tileSize,
-            tileSize,
-            tileSize,
-            0,
-            0,
-            tileSize,
-            tileSize
-          );
-          const image = tempCanvas.toDataURL();
-          tiles.push({
-            id: y * cols + x,
-            image
-          });
-        }
-      }
-
+    img.onload = () => {
+      const tileMap = new TileMapData(img, tileSize);
+      const tiles = tileMap.GetTiles();
+    
       await updateTileNeighbors(tiles, tileSize);
-
+    
       // Display all tile images on screen
       const tileGallery = document.getElementById('tileGallery') || document.createElement('div');
       tileGallery.id = 'tileGallery';
