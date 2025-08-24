@@ -48,6 +48,7 @@ private cols = 0;
           }
         }
       }
+
   /**
    * Return the tile and its data at a given (row, col).
    */
@@ -73,7 +74,6 @@ private cols = 0;
   return img;
 }
 
-
   /**
    * Return all tiles.
    */
@@ -90,16 +90,6 @@ private cols = 0;
       (tile as any).data = data;
     }
   }
-
-  /**
-   * Helper to load tiles (splitting from image).
-   * integrate existing loop here.
-   */
-  public LoadTilesFromImage(): void {
-    if (!this.sourceImage || !this.tileSize) return;
-    this.createTiles(this.sourceImage);
-  }
-
 }
 
 
