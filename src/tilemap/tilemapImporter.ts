@@ -65,13 +65,13 @@ private cols = 0;
    * Params tbd
    */
   public GetTileContextImg(tileId: number): HTMLImageElement | null {
-  const tile = this.tiles.find(t => t.id === tileId);
-  if (!tile || !tile.image) return null;
+    const tile = this.tiles.find(t => t.id === tileId);
+    if (!tile || !tile.image) return null;
 
-  const img = new Image();
-  img.src = tile.image;
-  return img;
-}
+    const img = new Image();
+    img.src = tile.image;
+    return img;
+  }
 
 
   /**
