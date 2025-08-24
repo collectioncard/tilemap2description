@@ -78,6 +78,7 @@ private cols = 0;
    * Return all tiles.
    */
   public GetTiles(): Tile[] {
+    console.log("Tiles: ", this.tiles);
     return this.tiles;
   }
 
