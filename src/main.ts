@@ -4,7 +4,7 @@ import './style.css'
 import type { TileDescription } from './languageModel/ModelConnector'
 import { addLLMControls } from './languageModel/LLMIntegration'
 
-import { updateTileNeighbors, TileMapData } from './tilemap/tilemapImporter.ts'
+import { updateTileNeighbors } from './tilemap/tilemapImporter.ts'
 
 export interface Tile {
   id: number;
