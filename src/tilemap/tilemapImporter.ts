@@ -107,12 +107,11 @@ export class TileMapData {
   /**
    * Set custom data for a given tile.
    */
-  public SetTileData(tileId: number, data: any): void {
+  public SetTileData(tileId: number, data: Partial<Omit<Tile, "TileID"> & { image?: HTMLCanvasElement }>): void {
     const tile = this.tiles.find(t => t.TileID === tileId);
     if (!tile) throw new Error(`Tile with ID ${tileId} not found`);
 
-    // @ts-expect-error: allow extending with dynamic props
-    tile.data = data;
+    Object.assign(tile, data);
   }
 }
 

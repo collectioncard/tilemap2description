@@ -165,8 +165,12 @@ processBtn.onclick = async () => {
       
       //Zikria Test data
       // Test for SetTileData
-      tileMap.SetTileData(0, { walkable: true, terrain: "grass" });
-      console.log(tileMap.GetTiles()[0]);
+      tileMap.SetTileData(104, {
+      Description: "Bottom Well Tile",
+      TileRequirements: "Must be used with tile 92"
+      });
+
+      console.log(tileMap.GetTiles()[104]);
 
     };
     img.src = e.target?.result as string;
