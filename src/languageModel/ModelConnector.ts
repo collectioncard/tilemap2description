@@ -88,7 +88,7 @@ Image data: ${imageBase64}
    * @param tiles - Array of tiles with id and image data
    * @returns Promise<TileDescription[]> - Array of structured descriptions
    */
-  async generateMultipleTileDescriptions(tiles: Array<{id: number, image: string}>): Promise<TileDescription[]> {
+  async generateMultipleTileDescriptions(tiles: Array<{ id: number, image: string }>): Promise<TileDescription[]> {
     const descriptions: TileDescription[] = [];
 
     for (const tile of tiles) {

@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
   processBtn.onclick = async () => {
     console.log('🚀 Process button clicked!');
   const file = imageInput.files?.[0];
-  const tileSize = parseInt(tileSizeInput.value, 10);
-  if (!file || isNaN(tileSize) || tileSize <= 0) {
-    alert('Please select an image and enter a valid tile size.');
+  const tileSize = parseInt(tileSizeInput.value, 10) || 16; // Default to 16 if empty or invalid
+  if (!file || tileSize <= 0) {
+    alert('Please select an image file.');
     return;
   }
 
