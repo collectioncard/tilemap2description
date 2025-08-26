@@ -34,10 +34,14 @@ export interface Tile {
  */
 export async function generateTileDescriptions(tiles: Tile[]): Promise<void> {
   try {
-    // Use embedded API key for seamless experience
-    const apiKey = "AIzaSyDgy5LWDCXpgQRi8nTpvDqCmDwUJklsH84";
+    // Get API key from environment variables
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
-    console.log("🔑 Using embedded API key for LLM analysis");
+    if (!apiKey) {
+      throw new Error("Google API key not found. Please set VITE_GOOGLE_API_KEY in your .env file.");
+    }
+
+    console.log("🔑 Using API key from environment variables for LLM analysis");
     const modelConnector = new ModelConnector(apiKey);
     
     // Show progress indicator
@@ -224,8 +228,8 @@ function showPermanentAIInstructions(container: HTMLElement): void {
   instructionBox.style.border = '1px solid #4caf50';
   instructionBox.style.fontSize = '14px';
   instructionBox.innerHTML = `
-    <strong>✅ AI分析完成！</strong><br>
-    <small>💡 现在点击瓦片可查看AI生成的详细结构化描述</small>
+    <strong>✅ AI Analysis Complete!</strong><br>
+    <small>💡 Click on tiles to view AI-generated detailed structured descriptions</small>
   `;
 
   container.appendChild(instructionBox);

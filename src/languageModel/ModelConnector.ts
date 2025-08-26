@@ -42,7 +42,7 @@ export class ModelConnector {
     this.model = new ChatGoogleGenerativeAI({
       model: "gemini-1.5-flash",
       temperature: 0.3,
-      apiKey: apiKey || process.env.GOOGLE_API_KEY,
+      apiKey: apiKey || import.meta.env.VITE_GOOGLE_API_KEY,
     });
 
     // Bind the schema to the model for structured output
