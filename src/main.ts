@@ -159,12 +159,6 @@ processBtn.onclick = async () => {
         tileGallery.appendChild(imgElem);
       });
 
-      //Izzy's Testing data
-      // Create TileMapData (so we can use it to call GetTiles)
-      const tileMapData = new TileMapData(img, tileSize);
-      (tileMapData as any).tiles = tiles; // Directly assign tiles for now (since LoadTilesFromImage is not implemented)
-      console.log('GetTiles output:', tileMapData.GetTiles());
-
       document.body.appendChild(tileGallery);
       console.log('Tiles:', tiles); //GetTiles Output gives the same results
       alert(`Created ${tiles.length} tiles. Please check the console for details.`);

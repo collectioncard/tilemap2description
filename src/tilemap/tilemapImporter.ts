@@ -84,6 +84,7 @@ export class TileMapData {
    * Return a "context image" for a tile.
    * Params tbd
    */
+
   public GetTileContextImg(tileId: number, options?:any): HTMLImageElement {
     const tile = this.tiles.find(t => t.TileID === tileId);
     if (!tile) throw new Error(`Tile with ID ${tileId} not found`);
@@ -92,12 +93,14 @@ export class TileMapData {
     img.src = tile.image.toDataURL(); // convert canvas to base64 for HTMLImageElement
     // apply options? (scaling, padding, etc.)
     return img;
-}
+  }
+
 
   /**
    * Return all tiles.
    */
   public GetTiles(): Tile[] {
+    console.log("Tiles: ", this.tiles);
     return this.tiles;
   }
 
