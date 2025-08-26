@@ -2,22 +2,25 @@
 import type { Tile } from "../main.ts";
 
 export class TileMapData {
-private tiles: Tile[] = [];
-private sourceImage: HTMLImageElement | null = null;
-private tileSize: number = 0;
-private rows = 0;
-private cols = 0;
+  private tiles: Tile[] = [];
+  private sourceImage: HTMLImageElement;
+  private tileSize: number = 0;
 
-  constructor(image: HTMLImageElement | null, tileSize: number) {
+  private rows: number = 0;
+  private cols: number = 0;
+
+  constructor(image: HTMLImageElement, tileSize: number) {
     this.sourceImage = image;
     this.tileSize = tileSize;
   
     // TODO: call tile-splitting logic here
-    this.createTiles(this.sourceImage!);
+    this.LoadTilesFromImage(this.sourceImage!);
   }
 
 
-  private createTiles(img: HTMLImageElement){
+  public LoadTilesFromImage(img: HTMLImageElement){
+        this.tiles = [] //reset
+
         this.cols = Math.floor(img.width / this.tileSize);
         this.rows = Math.floor(img.height / this.tileSize);
         
@@ -25,6 +28,7 @@ private cols = 0;
         tempCanvas.width = this.tileSize;
         tempCanvas.height = this.tileSize;
         const tempCtx = tempCanvas.getContext("2d");
+        if (!tempCtx) throw new Error("2D context not available"); //error check
 
         for (let y = 0; y < this.rows; y++) {
           for (let x = 0; x < this.cols; x++) {
@@ -40,11 +44,25 @@ private cols = 0;
               this.tileSize,
               this.tileSize
             );
-            const image = tempCanvas.toDataURL();
-            this.tiles.push({
-              id: y * this.cols + x,
-              image,
-            });
+
+            // Clone the canvas so each Tile keeps its own
+            const tileCanvas = document.createElement("canvas");
+            tileCanvas.width = this.tileSize;
+            tileCanvas.height = this.tileSize;
+            const tileCtx = tileCanvas.getContext("2d");
+            if (!tileCtx) throw new Error("2D context not available");
+            tileCtx.drawImage(tempCanvas, 0, 0);
+
+            const tile: Tile = {
+              TileID: y * this.cols + x,
+              Description: "",
+              TileRequirements: "",
+              image: tileCanvas,
+              imgSize: this.tileSize,
+            };
+
+            this.tiles.push(tile);
+
           }
         }
       }
@@ -52,26 +70,28 @@ private cols = 0;
   /**
    * Return the tile and its data at a given (row, col).
    */
-  public GetTileAt(row: number, col: number): Tile | null {
+  public GetTileAt(row: number, col: number): Tile {
     // TODO: implement using row/col math
     if (row < 0 || col < 0 || row >= this.cols || col >= this.rows){
-            return null;
-        } else {
-            return this.tiles[col * this.cols + row];
-        }
+            throw new Error("Tile coordinates out of bounds");;
+    }
+    
+    return this.tiles[col * this.cols + row];
+
   }
 
   /**
    * Return a "context image" for a tile.
    * Params tbd
    */
-  public GetTileContextImg(tileId: number): HTMLImageElement | null {
-  const tile = this.tiles.find(t => t.id === tileId);
-  if (!tile || !tile.image) return null;
+  public GetTileContextImg(tileId: number, options?:any): HTMLImageElement {
+    const tile = this.tiles.find(t => t.TileID === tileId);
+    if (!tile) throw new Error(`Tile with ID ${tileId} not found`);
 
-  const img = new Image();
-  img.src = tile.image;
-  return img;
+    const img = new Image();
+    img.src = tile.image.toDataURL(); // convert canvas to base64 for HTMLImageElement
+    // apply options? (scaling, padding, etc.)
+    return img;
 }
 
   /**
@@ -85,10 +105,11 @@ private cols = 0;
    * Set custom data for a given tile.
    */
   public SetTileData(tileId: number, data: any): void {
-    const tile = this.tiles.find(t => t.id === tileId);
-    if (tile) {
-      (tile as any).data = data;
-    }
+    const tile = this.tiles.find(t => t.TileID === tileId);
+    if (!tile) throw new Error(`Tile with ID ${tileId} not found`);
+
+    // @ts-expect-error: allow extending with dynamic props
+    tile.data = data;
   }
 }
 
@@ -197,7 +218,7 @@ export async function updateTileNeighbors(tiles: Tile[], tileSize: number): Prom
   // Precompute edges for all tiles
   const edgesMap = new Map<number, Awaited<ReturnType<typeof getEdgePixels>>>();
   for (const tile of tiles) {
-    edgesMap.set(tile.id, await getEdgePixels(tile.image!, tileSize));
+    edgesMap.set(tile.TileID, await getEdgePixels(tile.image.toDataURL(), tileSize));
   }
 
 
@@ -212,10 +233,10 @@ export async function updateTileNeighbors(tiles: Tile[], tileSize: number): Prom
 
   // Compare all tiles for matching edges
   for (const tileA of tiles) {
-    const edgesA = edgesMap.get(tileA.id)!;
+    const edgesA = edgesMap.get(tileA.TileID)!;
     for (const tileB of tiles) {
-      if (tileA.id === tileB.id) continue;
-      const edgesB = edgesMap.get(tileB.id)!;
+      if (tileA.TileID === tileB.TileID) continue;
+      const edgesB = edgesMap.get(tileB.TileID)!;
 
 
       if (edgesMatch(edgesA.top, edgesB.bottom)) tileA.up!.push(tileB);
