@@ -1,5 +1,17 @@
 //TODO: This stuff
-import type { Tile } from "../main.ts";
+export interface Tile {
+    TileID: number;
+    Description: string;
+    TileRequirements: string;
+    image: HTMLCanvasElement;
+    imgSize: number;
+
+    //neighboring tiles in each direction
+    up?: Tile[];
+    down?: Tile[];
+    left?: Tile[];
+    right?: Tile[];
+}
 
 export class TileMapData {
   private tiles: Tile[] = [];

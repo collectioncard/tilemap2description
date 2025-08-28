@@ -1,22 +1,7 @@
 //TODO: Move importer team stuff into the right file
 import './style.css'
 
-import { updateTileNeighbors, TileMapData } from './tilemap/tilemapImporter.ts'
-
-export interface Tile {
-  TileID: number;
-  Description: string;
-  TileRequirements: string;
-  image: HTMLCanvasElement;
-  imgSize: number;
- 
-  //neighboring tiles in each direction
-  up?: Tile[];
-  down?: Tile[];
-  left?: Tile[];
-  right?: Tile[];
-}
-
+import { type Tile, updateTileNeighbors, TileMapData } from './tilemap/tilemapImporter.ts'
 
 ////////**** Code to take in a tileset and create array. Only edit if you need to ****////////
 
@@ -76,7 +61,7 @@ document.body.appendChild(modal);
 processBtn.onclick = async () => {
   const file = imageInput.files?.[0];
   const tileSize = parseInt(tileSizeInput.value, 10);
-  
+
   if (!file || isNaN(tileSize) || tileSize <= 0) {
     alert('Please select an image and enter a valid tile size.');
     return;
@@ -162,7 +147,7 @@ processBtn.onclick = async () => {
       document.body.appendChild(tileGallery);
       console.log('Tiles:', tiles); //GetTiles Output gives the same results
       alert(`Created ${tiles.length} tiles. Please check the console for details.`);
-      
+
       //Zikria Test data
       // Test for SetTileData
       tileMap.SetTileData(104, {
