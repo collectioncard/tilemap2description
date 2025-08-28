@@ -85,7 +85,7 @@ export class TileMapData {
    * Params tbd
    */
 
-  public GetTileContextImg(tileId: number, options?:any): HTMLImageElement {
+  public GetTileContextImg(tileId: number, _options?:any): HTMLImageElement {
     const tile = this.tiles.find(t => t.TileID === tileId);
     if (!tile) throw new Error(`Tile with ID ${tileId} not found`);
 
