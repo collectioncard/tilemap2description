@@ -8,8 +8,11 @@ let apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
 if (!apiKey) {
   throw new Error("GOOGLE_API_KEY environment variable is not set.");
-}else {
-    console.log("GOOGLE_API_KEY found:", apiKey);
+} else {
+  console.log(
+    "Google API Key found in environment variable ending in " +
+      apiKey.slice(-4),
+  );
 }
 
 // Zod schema for tile description structured output
@@ -72,15 +75,23 @@ export const TileDescriptionSchema = z.object({
 });
 
 const model = new ChatGoogleGenerativeAI({
-    apiKey: apiKey,
+  apiKey: apiKey,
   model: "gemini-2.0-flash",
   temperature: 0.3,
 }).withStructuredOutput(TileDescriptionSchema);
 
-const messages = [
-  new SystemMessage("Translate the following from English into Italian"),
-  new HumanMessage("hi!"),
-];
+export async function AnalyzeTileWithLLM(tileId: number, tileImageUrl: string) {
+  const messages = [
+    new SystemMessage(
+      `You are an expert in analyzing and describing tiles used in 2D tile-based games. Your task is to provide a detailed analysis of the visual characteristics, type, and potential uses of each tile based on its image. Use the provided schema to structure your output.`,
+    ),
+    new HumanMessage(
+      `$\nTile ID: ${tileId}\nImage URL: ${tileImageUrl}\nPlease provide your analysis in the specified schema.`,
+    ),
+  ];
 
-const result = await model.invoke(messages);
-console.log(result);
+  //TODO: Do something more than this
+  const result = await model.invoke(messages);
+  console.log("LLM Analysis Result for Tile ID", tileId, ":", result);
+  return result;
+}

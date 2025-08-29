@@ -6,7 +6,7 @@ import {
   TileMapData,
 } from "./tilemap/tilemapImporter.ts";
 
-import "./languageModel/ModelConnector.ts"
+import "./languageModel/ModelConnector.ts";
 
 //I want to keep a global reference to the tiles for now
 let tileData: TileMapData;
